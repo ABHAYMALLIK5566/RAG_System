@@ -1,0 +1,343 @@
+================================================================================
+                    RAG MICROSERVICE API ENDPOINTS & COMMANDS
+================================================================================
+
+📋 Table of Contents:
+1. Authentication Endpoints
+2. Health & Monitoring Endpoints  
+3. Document Management Endpoints
+4. RAG Query Endpoints
+5. File Upload Endpoints
+6. Utility Commands
+7. Database Commands
+8. Docker Commands
+
+================================================================================
+1. AUTHENTICATION ENDPOINTS
+================================================================================
+
+🔐 Get Authentication Token
+---------------------------
+Endpoint: POST /api/v1/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+PowerShell:
+$authResponse = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/auth/token" -Method POST -ContentType "application/x-www-form-urlencoded" -Body "username=admin&password=admin123"
+$token = $authResponse.access_token
+$headers = @{ "Authorization" = "Bearer $token" }
+
+curl (Command Prompt):
+curl -X POST "http://localhost:8000/api/v1/auth/token" ^
+  -H "Content-Type: application/x-www-form-urlencoded" ^
+  -d "username=admin&password=admin123"
+
+Python:
+import requests
+auth_data = {"username": "admin", "password": "admin123"}
+response = requests.post("http://localhost:8000/api/v1/auth/token", data=auth_data, headers={"Content-Type": "application/x-www-form-urlencoded"})
+token = response.json()["access_token"]
+headers = {"Authorization": f"Bearer {token}"}
+
+================================================================================
+2. HEALTH & MONITORING ENDPOINTS
+================================================================================
+
+🏥 Health Check
+---------------
+Endpoint: GET /health
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:8000/health" -Method GET
+
+curl:
+curl -X GET "http://localhost:8000/health"
+
+📊 Health Metrics
+-----------------
+Endpoint: GET /health/metrics
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:8000/health/metrics" -Method GET
+
+curl:
+curl -X GET "http://localhost:8000/health/metrics"
+
+================================================================================
+3. DOCUMENT MANAGEMENT ENDPOINTS
+================================================================================
+
+📚 List All Documents
+---------------------
+Endpoint: GET /api/v1/rag/documents
+
+PowerShell:
+$response = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/rag/documents" -Method GET -Headers $headers
+$response.documents | ForEach-Object { Write-Host "ID: $($_.id) - Title: $($_.title)" }
+
+curl:
+curl -X GET "http://localhost:8000/api/v1/rag/documents" -H "Authorization: Bearer $token"
+
+📖 List Documents with Content
+------------------------------
+Endpoint: GET /api/v1/rag/documents?include_content=true
+
+PowerShell:
+$response = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/rag/documents?include_content=true" -Method GET -Headers $headers
+
+curl:
+curl -X GET "http://localhost:8000/api/v1/rag/documents?include_content=true" -H "Authorization: Bearer $token"
+
+📄 Add Single Document
+----------------------
+Endpoint: POST /api/v1/rag/documents
+Content-Type: application/json
+
+PowerShell:
+$docData = @{
+    title = "My Document"
+    content = "This is the document content"
+    metadata = @{ source = "manual" }
+} | ConvertTo-Json
+
+$response = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/rag/documents" -Method POST -Headers $headers -ContentType "application/json" -Body $docData
+
+curl:
+curl -X POST "http://localhost:8000/api/v1/rag/documents" ^
+  -H "Authorization: Bearer $token" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"title\":\"My Document\",\"content\":\"This is the document content\",\"metadata\":{\"source\":\"manual\"}}"
+
+🗑️ Delete Single Document
+-------------------------
+Endpoint: DELETE /api/v1/rag/documents/{document_id}
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:8000/api/v1/rag/documents/5" -Method DELETE -Headers $headers
+
+curl:
+curl -X DELETE "http://localhost:8000/api/v1/rag/documents/5" -H "Authorization: Bearer $token"
+
+🗑️ Delete All Documents
+-----------------------
+Endpoint: DELETE /api/v1/rag/documents
+
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:8000/api/v1/rag/documents" -Method DELETE -Headers $headers
+
+curl:
+curl -X DELETE "http://localhost:8000/api/v1/rag/documents" -H "Authorization: Bearer $token"
+
+================================================================================
+4. RAG QUERY ENDPOINTS
+================================================================================
+
+🔍 RAG Query
+------------
+Endpoint: POST /api/v1/rag/query
+Content-Type: application/json
+
+PowerShell:
+$queryData = @{
+    query = "What are the main findings in the research documents?"
+    max_tokens = 1000
+    temperature = 0.7
+    stream = $false
+} | ConvertTo-Json
+
+$response = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/rag/query" -Method POST -Headers $headers -ContentType "application/json" -Body $queryData
+Write-Host $response.response
+
+curl:
+curl -X POST "http://localhost:8000/api/v1/rag/query" ^
+  -H "Authorization: Bearer $token" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"query\":\"What are the main findings?\",\"max_tokens\":1000,\"temperature\":0.7,\"stream\":false}"
+
+================================================================================
+5. FILE UPLOAD ENDPOINTS
+================================================================================
+
+📁 Upload File
+--------------
+Endpoint: POST /api/v1/upload/file
+Content-Type: multipart/form-data
+
+PowerShell (using Python script):
+python test_pdf_upload.py "path/to/your/file.pdf"
+
+curl (Command Prompt):
+curl -X POST "http://localhost:8000/api/v1/upload/file" ^
+  -H "Authorization: Bearer $token" ^
+  -F "file=@path/to/your/file.pdf"
+
+Python:
+import requests
+with open("path/to/your/file.pdf", "rb") as f:
+    files = {"file": f}
+    response = requests.post("http://localhost:8000/api/v1/upload/file", headers=headers, files=files)
+
+================================================================================
+6. UTILITY COMMANDS
+================================================================================
+
+📋 Quick Document Check
+-----------------------
+Command: python check_doc.py [document_id or title]
+
+Examples:
+python check_doc.py                    # List all documents
+python check_doc.py 5                  # Show document with ID 5
+python check_doc.py "Paper-1"         # Show document with "Paper-1" in title
+python check_doc.py "AI"              # Show document with "AI" in title
+
+📤 PDF Upload Test
+------------------
+Command: python test_pdf_upload.py [file_path]
+
+Examples:
+python test_pdf_upload.py Papers/Paper_1.pdf
+python test_pdf_upload.py Papers/Paper_2.pdf
+
+================================================================================
+7. DATABASE COMMANDS
+================================================================================
+
+🗄️ Connect to PostgreSQL
+------------------------
+Command: docker exec -it task_supernomics-postgres-1 psql -U postgres -d rag_db
+
+📊 View All Documents
+---------------------
+SQL: SELECT id, title, LEFT(content, 100) as preview FROM documents;
+
+Command: docker exec -it task_supernomics-postgres-1 psql -U postgres -d rag_db -c "SELECT id, title, LEFT(content, 100) as preview FROM documents;"
+
+📄 View Specific Document
+-------------------------
+SQL: SELECT id, title, content FROM documents WHERE id = 5;
+
+Command: docker exec -it task_supernomics-postgres-1 psql -U postgres -d rag_db -c "SELECT id, title, content FROM documents WHERE id = 5;"
+
+📈 Document Statistics
+---------------------
+SQL: SELECT id, title, LENGTH(content) as char_count FROM documents ORDER BY id;
+
+Command: docker exec -it task_supernomics-postgres-1 psql -U postgres -d rag_db -c "SELECT id, title, LENGTH(content) as char_count FROM documents ORDER BY id;"
+
+🗑️ Delete All Documents
+-----------------------
+SQL: DELETE FROM documents;
+
+Command: docker exec -it task_supernomics-postgres-1 psql -U postgres -d rag_db -c "DELETE FROM documents;"
+
+================================================================================
+8. DOCKER COMMANDS
+================================================================================
+
+🐳 Start Services
+-----------------
+Command: docker-compose up -d
+
+🐳 Stop Services
+----------------
+Command: docker-compose down
+
+🐳 Rebuild and Start
+--------------------
+Command: docker-compose up --build -d
+
+🐳 View Logs
+------------
+Command: docker-compose logs -f rag-api
+
+🐳 View Specific Service Logs
+-----------------------------
+Command: docker logs task_supernomics-rag-api --tail 50
+
+🐳 Restart Service
+------------------
+Command: docker-compose restart rag-api
+
+🐳 Check Service Status
+-----------------------
+Command: docker-compose ps
+
+================================================================================
+9. COMPLETE WORKFLOW EXAMPLES
+================================================================================
+
+🔄 Complete RAG Workflow
+------------------------
+# 1. Start services
+docker-compose up -d
+
+# 2. Get authentication token
+$authResponse = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/auth/token" -Method POST -ContentType "application/x-www-form-urlencoded" -Body "username=admin&password=admin123"
+$headers = @{ "Authorization" = "Bearer $($authResponse.access_token)" }
+
+# 3. Upload a document
+python test_pdf_upload.py Papers/Paper_1.pdf
+
+# 4. Check document was uploaded
+python check_doc.py 5
+
+# 5. Query the RAG system
+$queryData = @{ query = "What are the main findings?"; max_tokens = 1000; temperature = 0.7; stream = $false } | ConvertTo-Json
+$response = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/rag/query" -Method POST -Headers $headers -ContentType "application/json" -Body $queryData
+Write-Host $response.response
+
+🔄 Complete PowerShell Workflow
+------------------------------
+# 1. Get token
+$authResponse = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/auth/token" -Method POST -ContentType "application/x-www-form-urlencoded" -Body "username=admin&password=admin123"
+$headers = @{ "Authorization" = "Bearer $($authResponse.access_token)" }
+
+# 2. List documents
+$response = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/rag/documents" -Method GET -Headers $headers
+$response.documents | ForEach-Object { Write-Host "ID: $($_.id) - Title: $($_.title)" }
+
+# 3. Add document
+$docData = @{ title = "Test Document"; content = "This is a test document"; metadata = @{ source = "test" } } | ConvertTo-Json
+$response = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/rag/documents" -Method POST -Headers $headers -ContentType "application/json" -Body $docData
+
+# 4. Query RAG
+$queryData = @{ query = "What is in the test document?"; max_tokens = 500; temperature = 0.7; stream = $false } | ConvertTo-Json
+$response = Invoke-RestMethod -Uri "http://localhost:8000/api/v1/rag/query" -Method POST -Headers $headers -ContentType "application/json" -Body $queryData
+Write-Host $response.response
+
+================================================================================
+10. TROUBLESHOOTING COMMANDS
+================================================================================
+
+🔍 Check Service Health
+-----------------------
+Command: curl -X GET "http://localhost:8000/health"
+
+🔍 Check Authentication
+-----------------------
+Command: curl -X POST "http://localhost:8000/api/v1/auth/token" -H "Content-Type: application/x-www-form-urlencoded" -d "username=admin&password=admin123"
+
+🔍 Check Database Connection
+---------------------------
+Command: docker exec -it task_supernomics-postgres-1 psql -U postgres -d rag_db -c "SELECT COUNT(*) FROM documents;"
+
+🔍 Check Redis Connection
+-------------------------
+Command: docker exec -it task_supernomics-redis-1 redis-cli ping
+
+🔍 View All Logs
+-----------------
+Command: docker-compose logs
+
+🔍 Check Container Status
+-------------------------
+Command: docker-compose ps
+
+================================================================================
+NOTES:
+- Replace $token with your actual authentication token
+- All PowerShell commands assume you have the $headers variable set with authentication
+- All curl commands assume you have the $token variable set
+- Database commands require the PostgreSQL container to be running
+- File paths in examples should be adjusted to your actual file locations
+================================================================================ 

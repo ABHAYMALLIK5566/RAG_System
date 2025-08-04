@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+venv/
+.env
+.env.*
+
+# Node
+node_modules/
+dist/
+build/
+*.log
+
+# Frontend build artifacts
+frontend-user/node_modules/
+frontend-user/dist/
+frontend-user/build/
+frontend-admin/node_modules/
+frontend-admin/dist/
+frontend-admin/build/
+
+# Docker
+*.pid
+*.sock
+
+# System
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# Sensitive or local config
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore package-lock.json if you want reproducible builds, otherwise keep it
+# package-lock.json
+
+# Ignore test outputs
+*.coverage
+*.pytest_cache/
+
+# Ignore architecture diagrams binaries if not needed (optional)
+# Architecture&Plan/*.png 

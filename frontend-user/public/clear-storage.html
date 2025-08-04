@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #c82333;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Storage Debug Tool</h1>
+        
+        <div class="info">
+            <h3>Current localStorage contents:</h3>
+            <pre id="storage-content">Loading...</pre>
+        </div>
+        
+        <button onclick="clearStorage()">Clear All localStorage</button>
+        <button onclick="clearToken()">Clear Token Only</button>
+        <button onclick="refreshPage()">Refresh Page</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function updateStorageDisplay() {
+            const content = document.getElementById('storage-content');
+            const items = {};
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                items[key] = value;
+            }
+            
+            content.textContent = JSON.stringify(items, null, 2);
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            document.getElementById('result').innerHTML = '<p class="success">✅ All localStorage cleared!</p>';
+            updateStorageDisplay();
+        }
+        
+        function clearToken() {
+            localStorage.removeItem('token');
+            document.getElementById('result').innerHTML = '<p class="success">✅ Token cleared!</p>';
+            updateStorageDisplay();
+        }
+        
+        function refreshPage() {
+            window.location.reload();
+        }
+        
+        // Update display on load
+        updateStorageDisplay();
+    </script>
+</body>
+</html> 
