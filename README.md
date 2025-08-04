@@ -59,6 +59,3 @@ Open [http://localhost:8000/docs](http://localhost:8000/docs) in your browser.
 
 ## Documentation
 - See the `Architecture&Plan/` directory for detailed docs, diagrams, and API endpoint references.
-
-## License
-MIT 
